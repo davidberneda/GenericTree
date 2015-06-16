@@ -143,14 +143,8 @@ begin
 end;
 
 procedure TNode<T>.Clear;
-var t : TInteger;
 begin
-  for t:=0 to Count-1 do
-  begin
-    FItems[t].FParent:=nil;
-    FItems[t].Free;
-  end;
-
+  Delete(0,Count);
   FItems:=nil;
 end;
 
@@ -196,12 +190,12 @@ end;
 function TNode<T>.GetIndex: TInteger;
 var t : Integer;
 begin
-  result:=-1;
-
   if FParent<>nil then
      for t:=0 to FParent.Count-1 do
          if FParent[t]=Self then
             Exit(t);
+
+  result:=-1;
 end;
 
 function TNode<T>.GetLevel: TInteger;
