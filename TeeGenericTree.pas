@@ -36,6 +36,11 @@ unit TeeGenericTree;
  var t : Integer,
  t:=Node.Count;
 
+ "Empty" returns True when the "Count" of children nodes is zero:
+
+ var b : Boolean,
+ b:=Node.Empty;
+
  Destroying a node removes it from its parent:
 
  Node.Free;
@@ -115,6 +120,7 @@ type
     function Add(const AData:T):TNode<T>;
     procedure Clear; inline;
     function Count:TInteger; inline;
+    function Empty:Boolean; inline;
     procedure Delete(const Index:TInteger; const ACount:TInteger=1);
     procedure ForEach(const AProc:TNodeProc; const Recursive:Boolean=True);
 
@@ -163,6 +169,11 @@ begin
   end;
 
   System.Delete(FItems,Index,ACount);
+end;
+
+function TNode<T>.Empty:Boolean;
+begin
+  result:=Count=0;
 end;
 
 procedure TNode<T>.ForEach(const AProc: TNodeProc; const Recursive: Boolean);
