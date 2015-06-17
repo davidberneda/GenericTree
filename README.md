@@ -35,8 +35,15 @@ Adding nodes using the Add method, returns the new created node:
 "Count" returns the number of child nodes for a given node:
 
 ```delphi
- var t : Integer,
+ var t : Integer;
  t:=Node.Count;
+```
+
+"Empty" returns True when the number of children nodes is zero:
+
+```delphi
+ var b : Boolean;
+ b:=Node.Empty;
 ```
 
 Destroying a node removes it from its parent:
