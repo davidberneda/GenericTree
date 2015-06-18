@@ -32,6 +32,16 @@ Adding nodes using the Add method, returns the new created node:
  Node := Root.Add('abc');
 ```
 
+"Data" property is your own custom data at each node:
+
+```delphi
+ var Node : TNode<TDateTime>;
+     When : TDateTime;
+ Node := Root.Add(Now);
+ When := Node.Data;
+ Node.Data := Tomorrow;
+```
+
 "Count" returns the number of child nodes for a given node:
 
 ```delphi
