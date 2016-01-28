@@ -1,7 +1,8 @@
 # GenericTree
+
 Delphi implementation of a generic Tree structure
 
-Basic usage:
+## Basic usage:
 
 ```delphi
  var Root : TNode<String>;
@@ -23,7 +24,7 @@ The generic type can be pre-declared for easier typing:
  var Tree1 : TFloatTree;
 ```
 
-Features:
+## Features:
 
 Adding nodes using the Add method, returns the new created node:
 
@@ -114,18 +115,19 @@ A loop of all children nodes can be done using a traditional loop:
  var t : Integer;
  for t:=0 to Node.Count-1 do Node[t].Data:='hello';
 ```
- 
+
 And also using a "for N" :
 
 ```delphi
  var N : TNode<String>;
  for N in Node.Items do N.Data:='hello';
 ```
- 
+
 The "Level" property returns the depth of a node, (the number of parent->parent->...), being zero for root nodes that have no parent.
 
 ```delphi
  var t : Integer;
  t:=Node.Level;
 ```
+
 
