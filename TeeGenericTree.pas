@@ -95,6 +95,10 @@ type
 
   TNode<T>=class
   private
+  type
+    TTypeItem=TNode<T>;
+    
+  var
     FItems : TArray<TNode<T>>;
 
     {$IFDEF AUTOREFCOUNT}[Weak]{$ENDIF}
@@ -168,7 +172,16 @@ begin
     FItems[t].Free;
   end;
 
+  {$IF CompilerVersion>28}
   System.Delete(FItems,Index,ACount);
+  {$ELSE}
+  t:=Count-ACount;
+
+  if t-Index>0 then
+     System.Move(FItems[Index+ACount],FItems[Index],SizeOf(TObject)*(t-Index));
+
+  SetLength(FItems,t);
+  {$IFEND}
 end;
 
 function TNode<T>.Empty:Boolean;
@@ -177,9 +190,6 @@ begin
 end;
 
 procedure TNode<T>.ForEach(const AProc: TNodeProc; const Recursive: Boolean);
-type
-  TTypeItem=TNode<T>;
-
 var t : TInteger;
     N : TTypeItem;
 begin
@@ -231,7 +241,7 @@ end;
 procedure TNode<T>.Orphan;
 begin
   if FParent<>nil then
-     System.Delete(FParent.FItems,Index,1);
+     FParent.Delete(Index,1);
 end;
 
 procedure TNode<T>.SetParent(const Value: TNode<T>);
