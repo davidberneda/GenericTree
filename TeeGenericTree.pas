@@ -97,10 +97,17 @@ type
   TInteger=NativeInt;
 
   TNode<T>=class
+  public
+  type
+    // <0 : A<B
+    //  0 : A=B
+    // >0 : A>B
+    TCompareProc=reference to function(const A,B:TNode<T>):Integer;
+
   private
   type
     TTypeItem=TNode<T>;
-    
+
   var
     FItems : TArray<TNode<T>>;
 
@@ -113,6 +120,7 @@ type
     function GetIndex:TInteger;
     function GetLevel:TInteger;
     procedure Orphan;
+    procedure PrivateSort(const ACompare: TCompareProc; const l,r:TInteger);
     procedure SetParent(const Value:TNode<T>);
   protected
     property Items:TArray<TNode<T>> read FItems;
@@ -133,6 +141,7 @@ type
     procedure Exchange(const Index1,Index2:TInteger);
     procedure Delete(const Index:TInteger; const ACount:TInteger=1);
     procedure ForEach(const AProc:TNodeProc; const Recursive:Boolean=True);
+    procedure Sort(const ACompare:TCompareProc; const Recursive:Boolean=True);
 
     property Index:TInteger read GetIndex;
     property Item[Index:TInteger]:TNode<T> read Get; default;
@@ -298,6 +307,58 @@ begin
 
     if FParent<>nil then
        FParent.Adopt(Self);
+  end;
+end;
+
+procedure TNode<T>.PrivateSort(const ACompare: TCompareProc; const l,r:TInteger);
+var i : TInteger;
+    j : TInteger;
+    x : TInteger;
+begin
+  i:=l;
+  j:=r;
+  x:=(i+j) shr 1;
+
+  while i<j do
+  begin
+    while ACompare(Self[i],Self[x])>0 do inc(i);
+    while ACompare(Self[x],Self[j])<0 do dec(j);
+
+    if i<j then
+    begin
+      Exchange(i,j);
+
+      if i=x then
+         x:=j
+      else
+      if j=x then
+         x:=i;
+    end;
+
+    if i<=j then
+    begin
+      inc(i);
+      dec(j)
+    end;
+  end;
+
+  if l<j then
+     PrivateSort(ACompare,l,j);
+
+  if i<r then
+     PrivateSort(ACompare,i,r);
+end;
+
+procedure TNode<T>.Sort(const ACompare: TCompareProc; const Recursive: Boolean);
+var t : TInteger;
+begin
+  if Count>1 then
+  begin
+    PrivateSort(ACompare,0,Count-1);
+
+    if Recursive then
+       for t:=0 to Count-1 do
+           Items[t].Sort(ACompare,Recursive);
   end;
 end;
 
