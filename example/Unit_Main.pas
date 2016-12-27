@@ -29,6 +29,8 @@ type
     Label1: TLabel;
     LChildren: TLabel;
     BAdd: TButton;
+    Button1: TButton;
+    CBCase: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -38,6 +40,7 @@ type
     procedure BAddClick(Sender: TObject);
     procedure BUpClick(Sender: TObject);
     procedure BDownClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -104,6 +107,19 @@ end;
 procedure TGenericTree_Example.BUpClick(Sender: TObject);
 begin
   MoveNode(-1);
+end;
+
+procedure TGenericTree_Example.Button1Click(Sender: TObject);
+begin
+  Tree.Sort(function(const A,B:TNode<String>):Integer
+    begin
+      if CBCase.Checked then
+         result:=CompareStr(A.Data,B.Data)
+      else
+         result:=CompareText(A.Data,B.Data);
+    end);
+
+  Present;
 end;
 
 procedure TGenericTree_Example.BAddClick(Sender: TObject);

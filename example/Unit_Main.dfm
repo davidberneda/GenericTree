@@ -90,4 +90,21 @@ object GenericTree_Example: TGenericTree_Example
     TabOrder = 5
     OnClick = BAddClick
   end
+  object Button1: TButton
+    Left = 357
+    Top = 312
+    Width = 75
+    Height = 25
+    Caption = 'Sort All'
+    TabOrder = 6
+    OnClick = Button1Click
+  end
+  object CBCase: TCheckBox
+    Left = 357
+    Top = 343
+    Width = 97
+    Height = 17
+    Caption = 'Case-Sensitive'
+    TabOrder = 7
+  end
 end
