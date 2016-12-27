@@ -130,4 +130,9 @@ The "Level" property returns the depth of a node, (the number of parent->parent-
  t:=Node.Level;
 ```
 
+Children nodes can be exchanged positions
+
+```delphi
+Node.Exchange( 5, 9 );  // <-- swap children nodes at 5 and 9 positions
+```
 
