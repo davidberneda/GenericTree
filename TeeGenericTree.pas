@@ -1,5 +1,8 @@
 // david@steema.com
 
+// Latest source:
+// https://github.com/davidberneda/GenericTree
+
 unit TeeGenericTree;
 
 {
@@ -105,6 +108,7 @@ type
     FParent : TNode<T>;
 
     procedure Adopt(const Item:TNode<T>);
+    procedure Extract(const Index: TInteger; const ACount: TInteger=1);
     function Get(Index:TInteger):TNode<T>; inline;
     function GetIndex:TInteger;
     function GetLevel:TInteger;
@@ -119,12 +123,14 @@ type
   var
     Data : T;
 
+    Constructor Create(const AData:T);
     Destructor Destroy; override;
 
     function Add(const AData:T):TNode<T>;
     procedure Clear; inline;
     function Count:TInteger; inline;
     function Empty:Boolean; inline;
+    procedure Exchange(const Index1,Index2:TInteger);
     procedure Delete(const Index:TInteger; const ACount:TInteger=1);
     procedure ForEach(const AProc:TNodeProc; const Recursive:Boolean=True);
 
@@ -138,6 +144,14 @@ implementation
 
 { TNode<T> }
 
+// Creates a new Node
+constructor TNode<T>.Create(const AData: T);
+begin
+  inherited Create;
+  Data:=AData;
+end;
+
+// Remove and destroy all children nodes, then remove Self from Parent
 destructor TNode<T>.Destroy;
 begin
   Clear;
@@ -145,33 +159,32 @@ begin
   inherited;
 end;
 
+// Adds a new node and sets its AData
 function TNode<T>.Add(const AData: T): TNode<T>;
 begin
-  result:=TNode<T>.Create;
-  result.Data:=AData;
+  result:=TNode<T>.Create(AData);
   Adopt(result);
 end;
 
+// Remove and destroy all children nodes
 procedure TNode<T>.Clear;
 begin
   Delete(0,Count);
   FItems:=nil;
 end;
 
+// Returns the number of children nodes
 function TNode<T>.Count: TInteger;
 begin
   result:=Length(FItems);
 end;
 
-procedure TNode<T>.Delete(const Index, ACount: TInteger);
+// Removes ACount items from the array, starting at Index position (without destroying them)
+procedure TNode<T>.Extract(const Index, ACount: TInteger);
+{$IF CompilerVersion<=28}
 var t : TInteger;
+{$ENDIF}
 begin
-  for t:=Index to Index+ACount-1 do
-  begin
-    FItems[t].FParent:=nil;
-    FItems[t].Free;
-  end;
-
   {$IF CompilerVersion>28}
   System.Delete(FItems,Index,ACount);
   {$ELSE}
@@ -184,11 +197,36 @@ begin
   {$IFEND}
 end;
 
+// Removes and destroys children nodes from Index position (ACount default = 1)
+procedure TNode<T>.Delete(const Index, ACount: TInteger);
+var t : TInteger;
+begin
+  // Destroy nodes
+  for t:=Index to Index+ACount-1 do
+  begin
+    FItems[t].FParent:=nil;
+    FItems[t].Free;
+  end;
+
+  Extract(Index,ACount);
+end;
+
+// Returns True when this node has no children nodes
 function TNode<T>.Empty:Boolean;
 begin
   result:=Count=0;
 end;
 
+// Swap children nodes at positions: Index1 <---> Index2
+procedure TNode<T>.Exchange(const Index1, Index2: TInteger);
+var tmp : TNode<T>;
+begin
+  tmp:=FItems[Index1];
+  FItems[Index1]:=FItems[Index2];
+  FItems[Index2]:=tmp;
+end;
+
+// Calls AProc for each children node (optionally recursive)
 procedure TNode<T>.ForEach(const AProc: TNodeProc; const Recursive: Boolean);
 var t : TInteger;
     N : TTypeItem;
@@ -203,11 +241,13 @@ begin
   end;
 end;
 
+// Returns children node at Index position
 function TNode<T>.Get(Index: TInteger): TNode<T>;
 begin
   result:=FItems[Index];
 end;
 
+// Returns the Index position of Self in Parent children list
 function TNode<T>.GetIndex: TInteger;
 var t : Integer;
 begin
@@ -219,6 +259,7 @@ begin
   result:=-1;
 end;
 
+// Returns the number of parents in the hierarchy up to top of tree
 function TNode<T>.GetLevel: TInteger;
 begin
   if FParent=nil then
@@ -227,6 +268,7 @@ begin
      result:=FParent.Level+1;
 end;
 
+// Adds Item to children list, sets Item Parent = Self
 procedure TNode<T>.Adopt(const Item:TNode<T>);
 var L: TInteger;
 begin
@@ -238,12 +280,14 @@ begin
   FItems[L]:=Item;
 end;
 
+// Removes itself from Parent children list
 procedure TNode<T>.Orphan;
 begin
   if FParent<>nil then
-     FParent.Delete(Index,1);
+     FParent.Extract(Index);
 end;
 
+// Sets or changes the Parent node of Self
 procedure TNode<T>.SetParent(const Value: TNode<T>);
 begin
   if FParent<>Value then
