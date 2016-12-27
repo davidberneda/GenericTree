@@ -89,6 +89,21 @@ unit TeeGenericTree;
  var t : Integer;
  t:=Node.Level;
 
+ Exchanging nodes (swap positions):
+
+ Root.Exchange( 5, 9 );  <-- swap positions
+
+ Sorting nodes:
+
+ Root.Sort(function(const A,B:TNode<String>):Integer
+    begin
+      if CaseSensitive then
+         result:=CompareStr(A.Data,B.Data)
+      else
+         result:=CompareText(A.Data,B.Data);
+    end);
+
+
 }
 
 interface
@@ -310,6 +325,7 @@ begin
   end;
 end;
 
+// Internal. Re-order nodes using QuickSort algorithm
 procedure TNode<T>.PrivateSort(const ACompare: TCompareProc; const l,r:TInteger);
 var i : TInteger;
     j : TInteger;
@@ -349,6 +365,7 @@ begin
      PrivateSort(ACompare,i,r);
 end;
 
+// Re-order children items according to a custom ACompare function
 procedure TNode<T>.Sort(const ACompare: TCompareProc; const Recursive: Boolean);
 var t : TInteger;
 begin
@@ -356,6 +373,7 @@ begin
   begin
     PrivateSort(ACompare,0,Count-1);
 
+    // Optionally, re-order all children-children... nodes
     if Recursive then
        for t:=0 to Count-1 do
            Items[t].Sort(ACompare,Recursive);
