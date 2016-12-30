@@ -134,11 +134,10 @@ type
     function Get(const Index:TInteger):TNode<T>; inline;
     function GetIndex:TInteger;
     function GetLevel:TInteger;
+    function ItemsCopy:TArray<TNode<T>>;
     procedure Orphan;
     procedure PrivateSort(const ACompare: TCompareProc; const l,r:TInteger);
     procedure SetParent(const Value:TNode<T>);
-  protected
-    property Items:TArray<TNode<T>> read FItems;
   public
   type
     TNodeProc=reference to procedure(const Item:TNode<T>);
@@ -160,6 +159,7 @@ type
 
     property Index:TInteger read GetIndex;
     property Item[const Index:TInteger]:TNode<T> read Get; default;
+    property Items:TArray<TNode<T>> read FItems;
     property Level:TInteger read GetLevel;
     property Parent:TNode<T> read FParent write SetParent;
   end;
@@ -189,6 +189,12 @@ begin
   result:=FItems[Index];
 end;
 
+// Returns the number of children nodes
+function TNode<T>.Count: TInteger;
+begin
+  result:=Length(FItems);
+end;
+
 // Adds a new node and sets its AData
 function TNode<T>.Add(const AData: T): TNode<T>;
 begin
@@ -201,12 +207,6 @@ procedure TNode<T>.Clear;
 begin
   Delete(0,Count);
   FItems:=nil;
-end;
-
-// Returns the number of children nodes
-function TNode<T>.Count: TInteger;
-begin
-  result:=Length(FItems);
 end;
 
 // Removes ACount items from the array, starting at Index position (without destroying them)
@@ -256,20 +256,36 @@ begin
   FItems[Index2]:=tmp;
 end;
 
+function TNode<T>.ItemsCopy:TArray<TNode<T>>;
+var t : TInteger;
+begin
+  SetLength(result,Count);
+
+  for t:=0 to Count-1 do
+      result[t]:=FItems[t];
+end;
+
 // Calls AProc for each children node (optionally recursive)
 procedure TNode<T>.ForEach(const AProc: TNodeProc; const Recursive: Boolean);
 var t : TInteger;
     N : TTypeItem;
+    tmp : TArray<TTypeItem>;
 begin
+  tmp:=ItemsCopy;
+
   t:=0;
 
   while t<Count do
   begin
-    N:=FItems[t];
-    AProc(N);
+    N:=tmp[t];
 
-    if Recursive then
-       N.ForEach(AProc);
+    if N<>nil then
+    begin
+      AProc(N);
+
+      if Recursive then
+         N.ForEach(AProc);
+    end;
 
     Inc(t);
   end;
@@ -341,7 +357,7 @@ begin
 
   while i<j do
   begin
-    while ACompare(Self[i],Self[x])>0 do inc(i);
+    while ACompare(Self[x],Self[i])>0 do inc(i);
     while ACompare(Self[x],Self[j])<0 do dec(j);
 
     if i<j then
