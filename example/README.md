@@ -1,3 +1,3 @@
-## Small VCL example using generic TNode<String>
+## Small VCL example using a generic TNode < String >
 
-This example creates a tree structure and synchronizes it with a VCL TTreeView control
+This example creates a tree structure of string nodes, and synchronizes it with a VCL TTreeView control
