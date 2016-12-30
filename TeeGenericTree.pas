@@ -131,7 +131,7 @@ type
 
     procedure Adopt(const Item:TNode<T>);
     procedure Extract(const Index: TInteger; const ACount: TInteger=1);
-    function Get(Index:TInteger):TNode<T>; inline;
+    function Get(const Index:TInteger):TNode<T>; inline;
     function GetIndex:TInteger;
     function GetLevel:TInteger;
     procedure Orphan;
@@ -146,7 +146,7 @@ type
   var
     Data : T;
 
-    Constructor Create(const AData:T);
+    Constructor Create(const AData:T); overload;
     Destructor Destroy; override;
 
     function Add(const AData:T):TNode<T>;
@@ -159,7 +159,7 @@ type
     procedure Sort(const ACompare:TCompareProc; const Recursive:Boolean=True);
 
     property Index:TInteger read GetIndex;
-    property Item[Index:TInteger]:TNode<T> read Get; default;
+    property Item[const Index:TInteger]:TNode<T> read Get; default;
     property Level:TInteger read GetLevel;
     property Parent:TNode<T> read FParent write SetParent;
   end;
@@ -169,18 +169,24 @@ implementation
 { TNode<T> }
 
 // Creates a new Node
-constructor TNode<T>.Create(const AData: T);
+Constructor TNode<T>.Create(const AData: T);
 begin
   inherited Create;
   Data:=AData;
 end;
 
 // Remove and destroy all children nodes, then remove Self from Parent
-destructor TNode<T>.Destroy;
+Destructor TNode<T>.Destroy;
 begin
   Clear;
   Orphan;
   inherited;
+end;
+
+// Returns children node at Index position
+function TNode<T>.Get(const Index: TInteger): TNode<T>;
+begin
+  result:=FItems[Index];
 end;
 
 // Adds a new node and sets its AData
@@ -255,25 +261,23 @@ procedure TNode<T>.ForEach(const AProc: TNodeProc; const Recursive: Boolean);
 var t : TInteger;
     N : TTypeItem;
 begin
-  for t:=0 to Count-1 do
+  t:=0;
+
+  while t<Count do
   begin
     N:=FItems[t];
     AProc(N);
 
     if Recursive then
        N.ForEach(AProc);
-  end;
-end;
 
-// Returns children node at Index position
-function TNode<T>.Get(Index: TInteger): TNode<T>;
-begin
-  result:=FItems[Index];
+    Inc(t);
+  end;
 end;
 
 // Returns the Index position of Self in Parent children list
 function TNode<T>.GetIndex: TInteger;
-var t : Integer;
+var t : TInteger;
 begin
   if FParent<>nil then
      for t:=0 to FParent.Count-1 do
