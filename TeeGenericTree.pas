@@ -275,7 +275,7 @@ begin
 
   t:=0;
 
-  while t<Count do
+  while t<Length(tmp) do
   begin
     N:=tmp[t];
 
