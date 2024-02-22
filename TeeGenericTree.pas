@@ -390,14 +390,12 @@ procedure TNode<T>.Sort(const ACompare: TCompareProc; const Recursive: Boolean);
 var t : TInteger;
 begin
   if Count>1 then
-  begin
     PrivateSort(ACompare,0,Count-1);
 
-    // Optionally, re-order all children-children... nodes
-    if Recursive then
-       for t:=0 to Count-1 do
-           Items[t].Sort(ACompare,Recursive);
-  end;
+  //Optionally, re-order all children-children... nodes
+  if Recursive then
+    for t:=0 to Count-1 do
+      Items[t].Sort(ACompare,Recursive);
 end;
 
 end.
