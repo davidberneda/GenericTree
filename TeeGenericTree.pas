@@ -156,6 +156,8 @@ type
     procedure Delete(const Index:TInteger; const ACount:TInteger=1);
     procedure ForEach(const AProc:TNodeProc; const Recursive:Boolean=True);
     procedure Sort(const ACompare:TCompareProc; const Recursive:Boolean=True);
+    function Root : TNode<T>;
+    function Depth : integer;
 
     property Index:TInteger read GetIndex;
     property Item[const Index:TInteger]:TNode<T> read Get; default;
@@ -172,6 +174,7 @@ implementation
 Constructor TNode<T>.Create(const AData: T);
 begin
   inherited Create;
+  fParent := nil;
   Data:=AData;
 end;
 
@@ -239,6 +242,19 @@ begin
   end;
 
   Extract(Index,ACount);
+end;
+
+function TNode<T>.Depth: integer;
+var
+  tmp : TNode<T>;
+begin
+  Result := 0;
+  Tmp := self;
+  while assigned(tmp.Parent) do
+    begin
+      inc(Result);
+      tmp := tmp.Parent;
+    end;
 end;
 
 // Returns True when this node has no children nodes
@@ -383,6 +399,13 @@ begin
 
   if i<r then
      PrivateSort(ACompare,i,r);
+end;
+
+function TNode<T>.Root: TNode<T>;
+begin
+  Result := Self; // default we are the root
+  While Assigned(Result.Parent) do
+    Result := Result.Parent;
 end;
 
 // Re-order children items according to a custom ACompare function
