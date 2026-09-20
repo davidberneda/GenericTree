@@ -104,6 +104,11 @@ unit TeeGenericTree;
     end);
 
 
+ The "Root" property returns the top-most Parent node (or Self if the node has no parent)
+
+ var Node : TNode<String>;
+     Node := MyNode.Root;
+
 }
 
 interface
@@ -134,6 +139,7 @@ type
     function Get(const Index:TInteger):TNode<T>; inline;
     function GetIndex:TInteger;
     function GetLevel:TInteger;
+    function GetRoot:TNode<T>;
     function ItemsCopy:TArray<TNode<T>>;
     procedure Orphan;
     procedure PrivateSort(const ACompare: TCompareProc; const l,r:TInteger);
@@ -162,6 +168,7 @@ type
     property Items:TArray<TNode<T>> read FItems;
     property Level:TInteger read GetLevel;
     property Parent:TNode<T> read FParent write SetParent;
+    property Root:TNode<T> read GetRoot;
   end;
 
 implementation
@@ -310,6 +317,15 @@ begin
      result:=0
   else
      result:=FParent.Level+1;
+end;
+
+// Returns the top-most parent node (or Self if there is no Parent)
+function TNode<T>.GetRoot:TNode<T>;
+begin
+  result:=Self;
+
+  while result.Parent<>nil do
+        result:=result.Parent;
 end;
 
 // Adds Item to children list, sets Item Parent = Self

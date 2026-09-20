@@ -149,7 +149,7 @@ begin
 
     Assert(Node.Count=3,'Wrong Count');
 
-    Node[1].DisposeOf;
+    Node[1].Free; // DisposeOf is deprecated
 
     Assert(Node.Count=2,'Wrong Count');
 
@@ -266,6 +266,35 @@ begin
   end;
 end;
 
+procedure TestRoot;
+var RootNode, Child1, SubChild1: TNode<String>;
+begin
+  RootNode := TNode<String>.Create;
+  try
+    // 1. A standalone root node returns itself
+    Assert(RootNode.Root=RootNode, 'RootNode.Root should be RootNode');
+
+    // Build hierarchy: RootNode -> Child1 -> SubChild1
+    Child1 := RootNode.Add('Child 1');
+    SubChild1 := Child1.Add('SubChild 1');
+    try
+      // 2. Direct child returns the top root
+      Assert(Child1.Root = RootNode, 'Child1.Root should be RootNode');
+
+      // 3. Nested child returns the top root
+      Assert(SubChild1.Root = RootNode, 'SubChild1.Root should be RootNode');
+
+      // 4. Detached node becomes its own root
+      SubChild1.Parent := nil;
+      Assert(SubChild1.Root = SubChild1, 'Detached SubChild1 should be its own Root');
+    finally
+      SubChild1.Free; // Manually freed because it was detached
+    end;
+  finally
+    RootNode.Free;  // Frees RootNode and Child1 recursively
+  end;
+end;
+
 // Returns -1, 0, +1
 function CompareIntegers(const A,B:Integer):Integer;
 begin
@@ -339,6 +368,7 @@ begin
   end;
 end;
 
+
 begin
   {$IFOPT D+}
   ReportMemoryLeaksOnShutdown:=True;
@@ -354,6 +384,7 @@ begin
     Free_Index_Parent_Delete;
     Foreach;
     Level;
+    TestRoot;
     Exchange;
     Sort;
   except
