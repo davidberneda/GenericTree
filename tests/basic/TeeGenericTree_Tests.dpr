@@ -8,6 +8,8 @@ program TeeGenericTree_Tests;
   Basic tests for TeeGenericTree
 *)
 
+{$C+} // <--- DO NOT remove. This makes sure Assert is executed !
+
 uses
   System.SysUtils, System.DateUtils,
 
@@ -165,7 +167,7 @@ begin
 
     Node.Delete(0);
 
-    Assert(Node.Count=0,'Wrong Count');
+    Assert(Node.Empty,'Wrong Count');
   finally
     Node.Free;
   end;
