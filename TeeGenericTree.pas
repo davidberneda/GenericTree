@@ -157,10 +157,11 @@ type
     function Add(const AData:T):TNode<T>;
     procedure Clear; inline;
     function Count:TInteger; inline;
+    procedure Delete(const Index:TInteger; const ACount:TInteger=1);
     function Empty:Boolean; inline;
     procedure Exchange(const Index1,Index2:TInteger);
-    procedure Delete(const Index:TInteger; const ACount:TInteger=1);
     procedure ForEach(const AProc:TNodeProc; const Recursive:Boolean=True);
+    function IsRoot:Boolean;
     procedure Sort(const ACompare:TCompareProc; const Recursive:Boolean=True);
 
     property Index:TInteger read GetIndex;
@@ -261,6 +262,11 @@ begin
   tmp:=FItems[Index1];
   FItems[Index1]:=FItems[Index2];
   FItems[Index2]:=tmp;
+end;
+
+function TNode<T>.IsRoot: Boolean;
+begin
+  result:=Parent=nil;
 end;
 
 function TNode<T>.ItemsCopy:TArray<TNode<T>>;
