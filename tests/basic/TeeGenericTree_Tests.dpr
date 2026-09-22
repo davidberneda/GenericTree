@@ -297,6 +297,24 @@ begin
   end;
 end;
 
+procedure RejectCircularParent;
+var Root, Child, GrandChild: TNode<String>;
+begin
+  Root := TNode<String>.Create('Root');
+  try
+    Child := Root.Add('Child');
+    GrandChild := Child.Add('GrandChild');
+
+    Assert(Root.Contains(GrandChild), 'GrandChild is a descendant node of Root');
+
+    Child.Parent := GrandChild;
+    // Assert(False, 'Setting a node parent to one of its descendants is an invalid circular reference')
+
+  finally
+    Root.Free;
+  end;
+end;
+
 // Returns -1, 0, +1
 function CompareIntegers(const A,B:Integer):Integer;
 begin
@@ -387,6 +405,7 @@ begin
     Foreach;
     Level;
     TestRoot;
+    RejectCircularParent;
     Exchange;
     Sort;
   except

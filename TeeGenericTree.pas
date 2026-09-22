@@ -73,6 +73,9 @@ unit TeeGenericTree;
 
  Node.Parent:=nil;
 
+ Setting a node Parent to one of its children (or any descendant node) is an error
+ and should be avoided (it creates a Circular Reference)
+
  A node can also be removed and destroyed using its Parent Delete method:
 
  Root.Delete(3); // removes and destroys the 4th child of Root
@@ -109,6 +112,15 @@ unit TeeGenericTree;
  var Node : TNode<String>;
      Node := MyNode.Root;
 
+ The "IsRoot" function returns True when the node has no Parent (is a root node)
+
+    Root.IsRoot  <--- True, when Root Parent is nil.
+
+ The "Contains" function returns True when the Value parameter is a child of this node,
+ or (when the Descendants parameter is True) Value is a descendant in the tree.
+
+   Root.Contains(Child) <-- True
+   Root.Contains(GrandChild,True) <-- also True
 }
 
 interface
@@ -156,6 +168,7 @@ type
 
     function Add(const AData:T):TNode<T>;
     procedure Clear; inline;
+    function Contains(const Value: TNode<T>; const Descendants:Boolean=True):Boolean;
     function Count:TInteger; inline;
     procedure Delete(const Index:TInteger; const ACount:TInteger=1);
     function Empty:Boolean; inline;
@@ -353,18 +366,33 @@ begin
      FParent.Extract(Index);
 end;
 
+// Returns True when Value is a child (or a descendant, recursively) of Self
+function TNode<T>.Contains(const Value: TNode<T>; const Descendants:Boolean=True):Boolean;
+var t : TInteger;
+begin
+  result:=False;
+
+  for t:=0 to Count-1 do
+      if (Items[t]=Value) or (Descendants and Items[t].Contains(Value)) then
+      begin
+        result:=True;
+        break;
+      end;
+end;
+
 // Sets or changes the Parent node of Self
 procedure TNode<T>.SetParent(const Value: TNode<T>);
 begin
   if FParent<>Value then
-  begin
-    Orphan;
+     if not Contains(Value) then
+     begin
+       Orphan;
 
-    FParent:=Value;
+       FParent:=Value;
 
-    if FParent<>nil then
-       FParent.Adopt(Self);
-  end;
+       if FParent<>nil then
+          FParent.Adopt(Self);
+     end;
 end;
 
 // Internal. Re-order nodes using QuickSort algorithm
@@ -412,12 +440,12 @@ procedure TNode<T>.Sort(const ACompare: TCompareProc; const Recursive: Boolean);
 var t : TInteger;
 begin
   if Count>1 then
-    PrivateSort(ACompare,0,Count-1);
+     PrivateSort(ACompare,0,Count-1);
 
   //Optionally, re-order all children-children... nodes
   if Recursive then
-    for t:=0 to Count-1 do
-      Items[t].Sort(ACompare,Recursive);
+     for t:=0 to Count-1 do
+         Items[t].Sort(ACompare,Recursive);
 end;
 
 end.
